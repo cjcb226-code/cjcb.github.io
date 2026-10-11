@@ -1,0 +1,1820 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CJCB — Collectif des Jeunes Communicants du Burkina</title>
+    <!-- Google Fonts: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1A5DC8;
+            --accent: #E05A1A;
+            --dark: #1A1A2E;
+            --light: #F8F9FA;
+            --text: #2D2D2D;
+            --gray: #6C757D;
+            --border: #E5E7EB;
+            --success: #10B981;
+            --error: #EF4444;
+            --transition: all 0.25s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        /* Toast Notifications */
+        #toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            padding: 14px 20px;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 3.2s forwards;
+            max-width: 350px;
+        }
+        .toast.success { background-color: var(--success); }
+        .toast.error { background-color: var(--error); }
+        .toast.info { background-color: var(--primary); }
+
+        @keyframes slideIn {
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            to { opacity: 0; transform: translateY(20px); }
+        }
+
+        /* Navigation */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            z-index: 1000;
+            transition: var(--transition);
+        }
+        header.scrolled {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+        .logo-brand svg, .logo-brand img {
+            height: 44px;
+            width: auto;
+        }
+        .logo-text {
+            font-weight: 800;
+            font-size: 20px;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+        }
+        .nav-links a {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text);
+            transition: var(--transition);
+            position: pointer;
+        }
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--primary);
+        }
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+        }
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+            box-shadow: 0 4px 14px rgba(224, 90, 26, 0.3);
+        }
+        .btn-primary:hover {
+            background-color: #c94e13;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(224, 90, 26, 0.4);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            color: var(--dark);
+        }
+
+        /* Mobile Menu */
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 73px;
+            left: 0;
+            width: 100%;
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 20px 24px;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            z-index: 999;
+        }
+        .mobile-menu.active {
+            display: flex;
+        }
+        .mobile-menu a {
+            font-size: 16px;
+            font-weight: 500;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* Pages System */
+        .page {
+            display: none;
+            padding-top: 85px;
+            min-height: calc(100vh - 200px);
+            animation: fadeInPage 0.3s ease forwards;
+        }
+        .page.active {
+            display: block;
+        }
+        @keyframes fadeInPage {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* HERO SECTION WITH BG IMAGE */
+        .hero {
+            position: relative;
+            background: linear-gradient(135deg, rgba(26,26,46,0.88), rgba(26,93,200,0.82)), url('') center/cover no-repeat;
+            color: white;
+            padding: 100px 24px 80px;
+            text-align: center;
+        }
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .hero-badge {
+            display: inline-block;
+            background: rgba(224, 90, 26, 0.25);
+            color: #ff9153;
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            border: 1px solid rgba(224, 90, 26, 0.4);
+        }
+        .hero h1 {
+            font-size: 42px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            letter-spacing: -1px;
+            line-height: 1.2;
+        }
+        .hero p {
+            font-size: 18px;
+            color: #E5E7EB;
+            margin-bottom: 32px;
+            font-weight: 300;
+        }
+        .hero-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 50px;
+        }
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 24px;
+            border-radius: 16px;
+        }
+        .stat-item h3 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ff9153;
+        }
+        .stat-item p {
+            font-size: 13px;
+            color: #D1D5DB;
+            margin: 0;
+        }
+
+        /* General Sections */
+        .section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 24px;
+        }
+        .section-header {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 50px;
+        }
+        .section-header span {
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .section-header h2 {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-top: 8px;
+        }
+        .section-header p {
+            color: var(--gray);
+            margin-top: 12px;
+            font-size: 15px;
+        }
+
+        /* Cards & Grids */
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+            transition: var(--transition);
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px -10px rgba(0,0,0,0.08);
+            border-color: rgba(26, 93, 200, 0.2);
+        }
+
+        /* CTA Banner */
+        .cta-banner {
+            background: linear-gradient(135deg, var(--accent), #c94e13);
+            color: white;
+            padding: 60px 24px;
+            text-align: center;
+            border-radius: 16px;
+            margin: 40px auto;
+            max-width: 1200px;
+        }
+        .cta-banner h2 { font-size: 30px; margin-bottom: 12px; }
+        .cta-banner p { font-size: 16px; opacity: 0.9; margin-bottom: 24px; }
+        .cta-banner .btn { background: white; color: var(--accent); }
+        .cta-banner .btn:hover { background: var(--dark); color: white; }
+
+        /* Footer */
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 60px 24px 30px;
+            margin-top: 80px;
+        }
+        .footer-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1.5fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        .footer-col h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: white;
+        }
+        .footer-col p, .footer-col li a {
+            font-size: 14px;
+            color: #9CA3AF;
+            margin-bottom: 10px;
+            display: block;
+            transition: var(--transition);
+        }
+        .footer-col li a:hover { color: white; transform: translateX(4px); }
+        .social-icons {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        .social-btn {
+            width: 36px;
+            height: 36px;
+            background: rgba(255,255,255,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+        .social-btn:hover { background: var(--accent); }
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            font-size: 13px;
+            color: #9CA3AF;
+        }
+
+        /* Forms & Inputs */
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: var(--transition);
+            background: white;
+        }
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26, 93, 200, 0.15);
+        }
+
+        /* Dashboard Layout (Admin & Member) */
+        .dashboard-layout {
+            display: flex;
+            min-height: calc(100vh - 73px);
+            margin-top: 73px;
+        }
+        .sidebar {
+            width: 260px;
+            background: var(--dark);
+            color: white;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+        }
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .sidebar-item {
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #9CA3AF;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .sidebar-item:hover, .sidebar-item.active {
+            background: rgba(26, 93, 200, 0.25);
+            color: white;
+        }
+        .sidebar-item.active { border-left: 4px solid var(--primary); }
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            background: var(--light);
+            overflow-y: auto;
+        }
+
+        /* Tables */
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            background: #F1F5F9;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        tr:last-child td { border-bottom: none; }
+
+        /* Badges & Tags */
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-success { background: #D1FAE5; color: #065F46; }
+        .badge-warning { background: #FEF3C7; color: #92400E; }
+        .badge-primary { background: #DBEAFE; color: #1E40AF; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            animation: scaleModal 0.25s ease;
+        }
+        @keyframes scaleModal {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* Responsive Breakpoints */
+        @media(max-width: 1024px) {
+            .footer-grid { grid-template-columns: repeat(2, 1fr); }
+            .grid-3, .grid-4 { grid-template-columns: repeat(2, 1fr); }
+            .hero-stats { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media(max-width: 768px) {
+            .nav-links, .nav-actions .btn-outline { display: none; }
+            .hamburger { display: block; }
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 30px; }
+            .hero-stats { grid-template-columns: 1fr; }
+            .dashboard-layout { flex-direction: column; }
+            .sidebar { width: 100%; padding: 20px; }
+            .main-content { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Navigation Header -->
+    <header id="header">
+        <div class="nav-container">
+            <div class="logo-brand" onclick="navigate('home')">
+                <!-- EXACT LOGO SVG RECREATION -->
+                <svg viewBox="0 0 320 120" style="height: 44px; width: auto;">
+                    <!-- Circular curved arrows -->
+                    <path d="M 65 35 A 48 48 0 0 1 125 22" fill="none" stroke="#E05A1A" stroke-width="5" stroke-linecap="round" />
+                    <polygon points="125,15 133,25 120,27" fill="#E05A1A" />
+                    <path d="M 230 25 A 48 48 0 0 1 260 75" fill="none" stroke="#1A5DC8" stroke-width="5" stroke-linecap="round" />
+                    <polygon points="268,75 258,82 258,70" fill="#1A5DC8" />
+
+                    <!-- Speech bubbles -->
+                    <circle cx="115" cy="48" r="22" fill="#1A5DC8" />
+                    <polygon points="102,64 96,78 112,67" fill="#1A5DC8" />
+                    <circle cx="108" cy="45" r="3" fill="white" /><circle cx="115" cy="45" r="3" fill="white" /><circle cx="122" cy="45" r="3" fill="white" />
+
+                    <circle cx="165" cy="58" r="26" fill="#E05A1A" />
+                    <polygon points="175,80 182,94 168,83" fill="#E05A1A" />
+
+                    <!-- Handshake -->
+                    <g transform="translate(60, 42)">
+                        <!-- Orange Hand -->
+                        <path d="M 30 25 L 60 55 L 75 40 L 45 10 Z" fill="#E05A1A" />
+                        <rect x="15" y="35" width="25" height="18" rx="4" transform="rotate(-45 15 35)" fill="#E05A1A" />
+                    </g>
+                    <g transform="translate(95, 30)">
+                        <!-- Blue Hand & Cuffs -->
+                        <path d="M 35 35 L 65 5 L 80 20 L 50 50 Z" fill="#1A5DC8" />
+                        <!-- Fingers -->
+                        <circle cx="28" cy="42" r="5" fill="#1A5DC8" />
+                        <circle cx="35" cy="48" r="5" fill="#1A5DC8" />
+                        <circle cx="42" cy="54" r="5" fill="#1A5DC8" />
+                        <circle cx="50" cy="59" r="5" fill="#1A5DC8" />
+                    </g>
+                </svg>
+            </div>
+            <nav class="nav-links">
+                <a href="javascript:void(0)" onclick="navigate('home')" id="link-home" class="active">Accueil</a>
+                <a href="javascript:void(0)" onclick="navigate('about')" id="link-about">À propos</a>
+                <a href="javascript:void(0)" onclick="navigate('cells')" id="link-cells">Cellules</a>
+                <a href="javascript:void(0)" onclick="navigate('projects')" id="link-projects">Projets</a>
+                <a href="javascript:void(0)" onclick="navigate('blog')" id="link-blog">Blog</a>
+                <a href="javascript:void(0)" onclick="navigate('hosting')" id="link-hosting" style="color:var(--accent); font-weight:600;">Hébergement & GitHub</a>
+                <a href="javascript:void(0)" onclick="navigate('contact')" id="link-contact">Contact</a>
+            </nav>
+            <div class="nav-actions">
+                <button class="btn btn-outline" onclick="navigate('login')" id="nav-login-btn">Connexion</button>
+                <button class="btn btn-primary" onclick="navigate('join')">Rejoindre</button>
+                <button class="hamburger" onclick="toggleMobileMenu()">☰</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="javascript:void(0)" onclick="navigate('home'); toggleMobileMenu()">Accueil</a>
+        <a href="javascript:void(0)" onclick="navigate('about'); toggleMobileMenu()">À propos</a>
+        <a href="javascript:void(0)" onclick="navigate('cells'); toggleMobileMenu()">Cellules</a>
+        <a href="javascript:void(0)" onclick="navigate('projects'); toggleMobileMenu()">Projets</a>
+        <a href="javascript:void(0)" onclick="navigate('blog'); toggleMobileMenu()">Blog</a>
+        <a href="javascript:void(0)" onclick="navigate('hosting'); toggleMobileMenu()">Hébergement & GitHub</a>
+        <a href="javascript:void(0)" onclick="navigate('contact'); toggleMobileMenu()">Contact</a>
+        <a href="javascript:void(0)" onclick="navigate('login'); toggleMobileMenu()" style="color:var(--primary);">Espace Connexion</a>
+    </div>
+
+    <!-- ================= PAGE 1 : ACCUEIL ================= -->
+    <div id="page-home" class="page active">
+        <section class="hero">
+            <div class="hero-content">
+                <span class="hero-badge">Ouagadougou — Burkina Faso</span>
+                <h1>Collectif des Jeunes Communicants du Burkina</h1>
+                <p>« Ensemble, faisons de la Com, notre engagement ! »</p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary" onclick="navigate('join')">Rejoindre le Mouvement</button>
+                    <button class="btn btn-outline" style="color:white; border-color:rgba(255,255,255,0.4);" onclick="navigate('projects')">Découvrir nos projets</button>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <h3 id="stat-members">300+</h3>
+                        <p>Sympathisants</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>2 Ans</h3>
+                        <p>D'Engagement (Juin 2024)</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>5</h3>
+                        <p>Cellules Actives</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3 id="stat-cotisants">70</h3>
+                        <p>Cotisants</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                <span>Notre Mission</span>
+                <h2>Dynamiser la communication au Burkina Faso</h2>
+                <p>Le CJCB rassemble les jeunes talents de la communication pour stimuler l'excellence professionnelle, l'innovation et l'insertion sur le marché du travail.</p>
+            </div>
+            <div class="grid-2">
+                <div class="card">
+                    <h3 style="color:var(--primary); margin-bottom:12px;">Vision & Ambition</h3>
+                    <p style="color:var(--gray);">Fédérer la jeunesse communiquante autour des valeurs d'éthique, de créativité et de solidarité. Nous transformons les compétences brutes en profils experts prêts pour les défis de demain.</p>
+                </div>
+                <div class="card">
+                    <h3 style="color:var(--accent); margin-bottom:12px;">Impact & Réseau</h3>
+                    <p style="color:var(--gray);">Un écosystème unique à Ouagadougou connectant 40 membres actifs et un large réseau de partenaires institutionnels et d'agences de communication de premier plan.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" style="background: white;">
+            <div class="section-header">
+                <span>Expertises</span>
+                <h2>Nos Domaines d'Action</h2>
+                <p>Des piliers solides pour propulser votre carrière dans les métiers de la communication.</p>
+            </div>
+            <div class="grid-3">
+                <div class="card">
+                    <h4 style="color:var(--primary); margin-bottom:10px;">🎓 Formation & Mentorat</h4>
+                    <p style="color:var(--gray); font-size:14px;">Ateliers pratiques, masterclasses et programme de mentorat junior/senior pour maîtriser les techniques modernes.</p>
+                </div>
+                <div class="card">
+                    <h4 style="color:var(--accent); margin-bottom:10px;">🚀 Insertion Professionnelle</h4>
+                    <p style="color:var(--gray); font-size:14px;">Accompagnement personnalisé sur 12 mois, marketplace des compétences et accès direct aux opportunités.</p>
+                </div>
+                <div class="card">
+                    <h4 style="color:var(--primary); margin-bottom:10px;">💡 Production de Contenus</h4>
+                    <p style="color:var(--gray); font-size:14px;">Création de contenus impactants, gestion des réseaux sociaux et animation du Quiz du Communicant.</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="cta-banner">
+            <h2>Prêt à relever le défi avec nous ?</h2>
+            <p>Rejoignez 300+ passionnés de communication et boostez votre parcours dès aujourd'hui.</p>
+            <button class="btn" onclick="navigate('join')">Adhérer au CJCB</button>
+        </div>
+    </div>
+
+    <!-- ================= PAGE 2 : À PROPOS ================= -->
+    <div id="page-about" class="page">
+        <section class="section">
+            <div class="section-header">
+                <span>Qui sommes-nous ?</span>
+                <h2>Le Collectif des Jeunes Communicants du Burkina</h2>
+                <p>Fondé en juin 2024 à Ouagadougou, le CJCB est l'incubateur de référence des talents de la communication burkinabè.</p>
+            </div>
+
+            <div class="grid-3" style="margin-bottom:60px;">
+                <div class="card">
+                    <h3 style="color:var(--primary); margin-bottom:12px;">Mission</h3>
+                    <p style="color:var(--gray); font-size:14px;">Offrir un cadre structuré d'échange, de formation continue et d'insertion professionnelle pour les jeunes professionnels de la com.</p>
+                </div>
+                <div class="card">
+                    <h3 style="color:var(--accent); margin-bottom:12px;">Vision</h3>
+                    <p style="color:var(--gray); font-size:14px;">Être la référence incontournable de l'excellence en communication en Afrique de l'Ouest d'ici 2030.</p>
+                </div>
+                <div class="card">
+                    <h3 style="color:var(--primary); margin-bottom:12px;">Valeurs</h3>
+                    <p style="color:var(--gray); font-size:14px;">Solidarité, intégrité, créativité, professionnalisme et engagement citoyen au service du développement.</p>
+                </div>
+            </div>
+
+            <div class="section-header">
+                <span>Gouvernance</span>
+                <h2>Bureau Exécutif</h2>
+                <p>Les 5 départements pilotes de notre organisation.</p>
+            </div>
+
+            <div class="grid-3">
+                <div class="card">
+                    <h4 style="color:var(--primary);">1. La Présidence</h4>
+                    <p style="color:var(--gray); font-size:14px; margin-top:8px;">Pilotage stratégique, représentation institutionnelle et coordination générale du collectif.</p>
+                </div>
+                <div class="card">
+                    <h4 style="color:var(--accent);">2. Le Secrétariat Général</h4>
+                    <p style="color:var(--gray); font-size:14px; margin-top:8px;">Gestion administrative, suivi des dossiers et coordination des activités opérationnelles.</p>
+                </div>
+                <div class="card">
+                    <h4 style="color:var(--primary);">3. La Trésorerie</h4>
+                    <p style="color:var(--gray); font-size:14px; margin-top:8px;">Gestion financière, suivi des cotisations et transparence budgétaire.</p>
+                </div>
+                <div class="card">
+                    <h4 style="color:var(--accent);">4. La Communication</h4>
+                    <p style="color:var(--gray); font-size:14px; margin-top:8px;">Image de marque, relations publiques, animation des réseaux sociaux et production multimédia.</p>
+                </div>
+                <div class="card">
+                    <h4 style="color:var(--primary);">5. Les Relations Extérieures</h4>
+                    <p style="color:var(--gray); font-size:14px; margin-top:8px;">Partenariats stratégiques, relations avec les agences et opportunités institutionnelles.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ================= PAGE 3 : CELLULES ================= -->
+    <div id="page-cells" class="page">
+        <section class="section">
+            <div class="section-header">
+                <span>Organisation spécialisée</span>
+                <h2>Nos 5 Cellules Opérationnelles</h2>
+                <p>Des unités spécialisées pour répondre aux défis spécifiques de la communication moderne.</p>
+            </div>
+
+            <div class="grid-2" style="margin-bottom:30px;">
+                <div class="card" style="border-left: 5px solid var(--primary);">
+                    <h3 style="color:var(--primary); margin-bottom:10px;">1. Cellule Veille et Innovation</h3>
+                    <p style="color:var(--gray); font-size:14px; margin-bottom:16px;">Surveille les tendances mondiales, pilote les projets innovants et réalise des analyses stratégiques de pointe.</p>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <span class="badge badge-primary">Veille Média</span>
+                        <span class="badge badge-primary">Tendances 2026</span>
+                        <span class="badge badge-primary">Innovation</span>
+                    </div>
+                </div>
+                <div class="card" style="border-left: 5px solid var(--accent);">
+                    <h3 style="color:var(--accent); margin-bottom:10px;">2. Cellule Communication & Contenus</h3>
+                    <p style="color:var(--gray); font-size:14px; margin-bottom:16px;">Produit les contenus officiels du CJCB, gère les plateformes sociales et anime Le Quiz du Communicant.</p>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <span class="badge badge-warning">Community Management</span>
+                        <span class="badge badge-warning">Infographie</span>
+                        <span class="badge badge-warning">Quiz</span>
+                    </div>
+                </div>
+                <div class="card" style="border-left: 5px solid #10B981;">
+                    <h3 style="color:#10B981; margin-bottom:10px;">3. Cellule Formation & Mentorat</h3>
+                    <p style="color:var(--gray); font-size:14px; margin-bottom:16px;">Conçoit et organise des ateliers pratiques, des masterclasses et le programme de mentorat junior/senior.</p>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <span class="badge" style="background:#D1FAE5; color:#065F46;">Masterclass</span>
+                        <span class="badge" style="background:#D1FAE5; color:#065F46;">Mentorat</span>
+                    </div>
+                </div>
+                <div class="card" style="border-left: 5px solid #8B5CF6;">
+                    <h3 style="color:#8B5CF6; margin-bottom:10px;">4. Cellule Insertion Professionnelle</h3>
+                    <p style="color:var(--gray); font-size:14px; margin-bottom:16px;">Assure l'accompagnement sur 12 mois, pilote la Marketplace CJCB et le Marché des Compétences.</p>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <span class="badge" style="background:#EDE9FE; color:#5B21B6;">Emploi & Freelance</span>
+                        <span class="badge" style="background:#EDE9FE; color:#5B21B6;">Coaching CV</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="border-left: 5px solid #EC4899;">
+                <h3 style="color:#EC4899; margin-bottom:10px;">5. Cellule Ressources Humaines</h3>
+                <p style="color:var(--gray); font-size:14px; margin-bottom:16px;">Gère le recrutement des membres, le suivi des adhésions, le bien-être et la cohésion interne au sein du collectif.</p>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <span class="badge" style="background:#FCE7F3; color:#831843;">Recrutement</span>
+                    <span class="badge" style="background:#FCE7F3; color:#831843;">Bien-être</span>
+                    <span class="badge" style="background:#FCE7F3; color:#831843;">Cohésion</span>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ================= PAGE 4 : PROJETS ================= -->
+    <div id="page-projects" class="page">
+        <section class="section">
+            <div class="section-header">
+                <span>Projet Phare</span>
+                <h2>Stratégie d'Insertion Professionnelle</h2>
+                <p>Période : Juillet 2026 – Juin 2027<br><em>« Visible. Compétent. Connecté. »</em></p>
+            </div>
+
+            <div class="grid-3" style="margin-bottom:50px;">
+                <div class="card">
+                    <h4 style="color:var(--primary);">Parcours Emploi</h4>
+                    <p style="color:var(--gray); font-size:14px; margin-top:8px;">Cible 15-18 membres. Optimisation CV, préparation aux entretiens et insertion en emploi salarié.</p>
+                </div>
+                <div class="card">
+                    <h4 style="color:var(--accent);">Parcours Freelance</h4>
+                    <p style="color:var(--gray); font-size:14px; margin-top:8px;">Cible 12-15 membres. Gestion de prestations, acquisition client et stratégie de tarification.</p>
+                </div>
+                <div class="card">
+                    <h4 style="color:#10B981;">Parcours Projet</h4>
+                    <p style="color:var(--gray); font-size:14px; margin-top:8px;">Cible 8-10 membres. Entrepreneuriat, élaboration de business model et recherche de financement.</p>
+                </div>
+            </div>
+
+            <div class="section-header">
+                <h2>Objectifs Juin 2027</h2>
+            </div>
+            <div class="grid-4">
+                <div class="card" style="text-align:center;">
+                    <h2 style="color:var(--primary); font-size:32px;">30</h2>
+                    <p style="color:var(--gray); font-size:13px; margin-top:8px;">Membres insérés professionnellement</p>
+                </div>
+                <div class="card" style="text-align:center;">
+                    <h2 style="color:var(--accent); font-size:32px;">20</h2>
+                    <p style="color:var(--gray); font-size:13px; margin-top:8px;">Cotisants réactivés</p>
+                </div>
+                <div class="card" style="text-align:center;">
+                    <h2 style="color:#10B981; font-size:32px;">50</h2>
+                    <p style="color:var(--gray); font-size:13px; margin-top:8px;">Nouveaux cotisants convertis</p>
+                </div>
+                <div class="card" style="text-align:center;">
+                    <h2 style="color:#8B5CF6; font-size:32px;">100%</h2>
+                    <p style="color:var(--gray); font-size:13px; margin-top:8px;">Membres avec profil pro à jour</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ================= PAGE 5 : BLOG ================= -->
+    <div id="page-blog" class="page">
+        <section class="section">
+            <div class="section-header">
+                <span>Actualités & Ressources</span>
+                <h2>Le Blog du CJCB</h2>
+                <p>Restez informés des tendances et opportunités dans la communication.</p>
+            </div>
+
+            <!-- Category Filters -->
+            <div style="display:flex; justify-content:center; gap:12px; margin-bottom:40px; flex-wrap:wrap;" id="blog-filters">
+                <button class="btn btn-primary" onclick="filterBlog('Tous', this)">Tous</button>
+                <button class="btn btn-outline" onclick="filterBlog('Formations', this)">Formations</button>
+                <button class="btn btn-outline" onclick="filterBlog('Actualités de la Com', this)">Actualités de la Com</button>
+                <button class="btn btn-outline" onclick="filterBlog('Offres et Opportunités', this)">Offres et Opportunités</button>
+            </div>
+
+            <!-- Blog Grid -->
+            <div class="grid-3" id="blog-container">
+                <!-- Dynamic Posts injected via JS -->
+            </div>
+
+            <!-- Single Post View Container -->
+            <div id="blog-single-view" style="display:none; max-width:800px; margin:0 auto; background:white; padding:40px; border-radius:12px; border:1px solid var(--border);">
+                <button class="btn btn-outline" onclick="closeBlogPost()" style="margin-bottom:20px;">← Retour aux articles</button>
+                <span id="single-post-cat" class="badge badge-primary" style="margin-bottom:12px;"></span>
+                <h1 id="single-post-title" style="font-size:28px; color:var(--dark); margin-bottom:12px;"></h1>
+                <p id="single-post-meta" style="color:var(--gray); font-size:13px; margin-bottom:24px; border-bottom:1px solid var(--border); padding-bottom:12px;"></p>
+                <div id="single-post-content" style="font-size:15px; color:var(--text); line-height:1.8;"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ================= PAGE 6 : REJOINDRE ================= -->
+    <div id="page-join" class="page">
+        <section class="section">
+            <div class="section-header">
+                <span>Adhésion</span>
+                <h2>Rejoignez le Collectif</h2>
+                <p>Choisissez votre niveau d'engagement et intégrez notre réseau dynamique.</p>
+            </div>
+
+            <div class="grid-3" style="margin-bottom:40px;">
+                <div class="card" style="text-align:center;">
+                    <h3 style="color:var(--primary); margin-bottom:10px;">Sympathisant</h3>
+                    <p style="font-size:24px; font-weight:700; color:var(--dark); margin-bottom:16px;">Gratuit</p>
+                    <p style="color:var(--gray); font-size:13px;">Accès aux événements publics et aux discussions générales.</p>
+                </div>
+                <div class="card" style="text-align:center; border:2px solid var(--accent);">
+                    <span class="badge badge-warning" style="margin-bottom:10px;">Recommandé</span>
+                    <h3 style="color:var(--accent); margin-bottom:10px;">Cotisant</h3>
+                    <p style="font-size:24px; font-weight:700; color:var(--dark); margin-bottom:16px;">Actif</p>
+                    <p style="color:var(--gray); font-size:13px;">Accès prioritaire aux masterclasses, mentorat et ressources exclusives.</p>
+                </div>
+                <div class="card" style="text-align:center;">
+                    <h3 style="color:#10B981; margin-bottom:10px;">Actif</h3>
+                    <p style="font-size:24px; font-weight:700; color:var(--dark); margin-bottom:16px;">Impliqué</p>
+                    <p style="color:var(--gray); font-size:13px;">Participation aux décisions et pilotage des cellules et projets.</p>
+                </div>
+            </div>
+
+            <div style="max-width:700px; margin:0 auto; background:white; padding:40px; border-radius:16px; border:1px solid var(--border);">
+                <form id="joinForm" onsubmit="handleJoinSubmit(event)">
+                    <div class="form-group">
+                        <label>Nom complet</label>
+                        <input type="text" class="form-control" id="joinName" required placeholder="Ex: Aminata Ouédraogo">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" class="form-control" id="joinEmail" required placeholder="aminata@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Téléphone / WhatsApp</label>
+                        <input type="text" class="form-control" id="joinPhone" required placeholder="+226 XX XX XX XX">
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Domaine / Spécialité</label>
+                            <select class="form-control" id="joinDomain">
+                                <option>Community Management</option>
+                                <option>Relations Publiques</option>
+                                <option>Graphisme & Design</option>
+                                <option>Création Vidéo / Média</option>
+                                <option>Journalisme & Rédaction</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Niveau souhaité</label>
+                            <select class="form-control" id="joinLevel">
+                                <option>Sympathisant</option>
+                                <option>Cotisant</option>
+                                <option>Membre Actif</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Parcours d'insertion souhaité</label>
+                        <select class="form-control" id="joinPath">
+                            <option>Parcours Emploi</option>
+                            <option>Parcours Freelance</option>
+                            <option>Parcours Projet</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Motivation</label>
+                        <textarea class="form-control" id="joinMotivation" rows="4" required placeholder="Pourquoi souhaitez-vous rejoindre le CJCB ?"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%;">Soumettre ma demande d'adhésion</button>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <!-- ================= PAGE 7 : CONTACT ================= -->
+    <div id="page-contact" class="page">
+        <section class="section">
+            <div class="section-header">
+                <span>Contactez-nous</span>
+                <h2>Nous sommes à votre écoute</h2>
+                <p>Une question, un partenariat ou un besoin d'information ? Écrivez-nous.</p>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h3 style="color:var(--primary); margin-bottom:20px;">Coordonnées officielles</h3>
+                    <p style="margin-bottom:12px;"><strong>📍 Adresse :</strong> Ouagadougou, Burkina Faso</p>
+                    <p style="margin-bottom:12px;"><strong>📧 Email :</strong> cjcb226@gmail.com</p>
+                    <p style="margin-bottom:20px;"><strong>📞 Téléphone / WhatsApp :</strong> +226 70 11 64 34</p>
+                    
+                    <h4 style="margin-bottom:12px; font-size:15px;">Retrouvez-nous sur :</h4>
+                    <div class="social-icons">
+                        <a href="https://www.facebook.com/share/1BisEU37wU/" target="_blank" class="social-btn">FB</a>
+                        <a href="https://www.tiktok.com/@cjcb226" target="_blank" class="social-btn">TK</a>
+                        <a href="https://bf.linkedin.com/company/collectif-des-jeunes-communicants-du-burkina" target="_blank" class="social-btn">IN</a>
+                    </div>
+                </div>
+
+                <div class="card" style="background:linear-gradient(135deg, rgba(26,93,200,0.05), rgba(224,90,26,0.05));">
+                    <h3 style="color:var(--dark); margin-bottom:20px;">Posez votre question</h3>
+                    <form onsubmit="handleContactSubmit(event)">
+                        <div class="form-group">
+                            <label>Nom complet</label>
+                            <input type="text" class="form-control" id="contactName" required placeholder="Votre nom">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" class="form-control" id="contactEmail" required placeholder="votre@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Votre question</label>
+                            <textarea class="form-control" id="contactMessage" rows="4" required placeholder="Comment pouvons-nous vous aider ?"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:100%;">Envoyer la question</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ================= PAGE 8 : HÉBERGEMENT & GITHUB (GUIDE) ================= -->
+    <div id="page-hosting" class="page">
+        <section class="section">
+            <div class="section-header">
+                <span>Guide Pratique</span>
+                <h2>Comment héberger votre site sur GitHub Pages</h2>
+                <p>Voici la méthode simple, gratuite et rapide pour mettre votre site en ligne et le partager partout.</p>
+            </div>
+
+            <div style="max-width:800px; margin:0 auto; display:flex; flex-direction:column; gap:24px;">
+                <div class="card">
+                    <h3 style="color:var(--primary); margin-bottom:10px;">Étape 1 : Créer un compte GitHub</h3>
+                    <p style="color:var(--gray); font-size:14px;">Rendez-vous sur <a href="https://github.com" target="_blank" style="color:var(--primary); text-decoration:underline;">github.com</a> et créez un compte gratuit si vous n'en avez pas.</p>
+                </div>
+                <div class="card">
+                    <h3 style="color:var(--primary); margin-bottom:10px;">Étape 2 : Créer un nouveau dépôt (Repository)</h3>
+                    <p style="color:var(--gray); font-size:14px;">Cliquez sur le bouton <strong>"+"</strong> en haut à droite de GitHub, puis sur <strong>"New repository"</strong>. Nommez-le par exemple <code>cjcb-site</code>, laissez-le en public, cochez <strong>"Add a README file"</strong> et validez.</p>
+                </div>
+                <div class="card">
+                    <h3 style="color:var(--primary); margin-bottom:10px;">Étape 3 : Ajouter votre fichier <code>index.html</code></h3>
+                    <p style="color:var(--gray); font-size:14px;">Dans votre nouveau dépôt, cliquez sur <strong>"Add file"</strong> puis <strong>"Upload files"</strong>. Glissez-déposez votre fichier <code>index.html</code> (et l'image d'arrière-plan si nécessaire) puis cliquez sur <strong>"Commit changes"</strong>.</p>
+                </div>
+                <div class="card">
+                    <h3 style="color:var(--primary); margin-bottom:10px;">Étape 4 : Activer GitHub Pages</h3>
+                    <p style="color:var(--gray); font-size:14px;">Allez dans l'onglet <strong>"Settings"</strong> de votre dépôt, puis dans le menu de gauche sur <strong>"Pages"</strong>. Sous <em>Build and deployment</em>, choisissez la branche <code>main</code> (ou <code>master</code>) et cliquez sur <strong>Save</strong>. En quelques secondes, votre site sera en ligne sur une adresse du type <code>https://votre-pseudo.github.io/cjcb-site/</code> !</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ================= PAGE 9 : AUTHENTIFICATION (LOGIN) ================= -->
+    <div id="page-login" class="page">
+        <section class="section" style="display:flex; justify-content:center; align-items:center; min-height:70vh;">
+            <div class="card" style="width:100%; max-width:440px; padding:40px;">
+                <div style="text-align:center; margin-bottom:30px;">
+                    <h2 style="color:var(--dark);">Connexion</h2>
+                    <p style="color:var(--gray); font-size:13px; margin-top:6px;">Accédez à votre espace membre ou administration</p>
+                </div>
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" class="form-control" id="loginEmail" required placeholder="admin@cjcb.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Mot de passe</label>
+                        <input type="password" class="form-control" id="loginPassword" required placeholder="••••••••••">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-bottom:16px;">Se connecter</button>
+                    <div style="background:#F8F9FA; padding:12px; border-radius:8px; font-size:12px; color:var(--gray); text-align:center; margin-bottom:16px;">
+                        <strong>Admin par défaut :</strong><br>
+                        Email : <code>admin@cjcb.com</code><br>
+                        Mot de passe : <code>CJCB@2026!</code>
+                    </div>
+                    <p style="text-align:center; font-size:13px; color:var(--gray);">Pas encore de compte ? <a href="javascript:void(0)" onclick="navigate('register')" style="color:var(--primary); font-weight:600;">S'inscrire</a></p>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <!-- ================= PAGE 10 : INSCRIPTION (REGISTER) ================= -->
+    <div id="page-register" class="page">
+        <section class="section" style="display:flex; justify-content:center; align-items:center; min-height:80vh;">
+            <div class="card" style="width:100%; max-width:480px; padding:40px;">
+                <div style="text-align:center; margin-bottom:30px;">
+                    <h2 style="color:var(--dark);">Créer un compte</h2>
+                    <p style="color:var(--gray); font-size:13px; margin-top:6px;">Rejoignez la communauté des jeunes communicants</p>
+                </div>
+                <form onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label>Nom complet</label>
+                        <input type="text" class="form-control" id="regName" required placeholder="Votre nom">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" class="form-control" id="regEmail" required placeholder="votre@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Mot de passe (min 6 caractères)</label>
+                        <input type="password" class="form-control" id="regPassword" required minlength="6" placeholder="••••••••••">
+                    </div>
+                    <div class="form-group">
+                        <label>Domaine / Spécialité</label>
+                        <select class="form-control" id="regDomain">
+                            <option>Community Management</option>
+                            <option>Relations Publiques</option>
+                            <option>Graphisme & Design</option>
+                            <option>Création Vidéo / Média</option>
+                            <option>Journalisme & Rédaction</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-bottom:16px;">S'inscrire</button>
+                    <p style="text-align:center; font-size:13px; color:var(--gray);">Déjà un compte ? <a href="javascript:void(0)" onclick="navigate('login')" style="color:var(--primary); font-weight:600;">Se connecter</a></p>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <!-- ================= ESPACE ADMINISTRATEUR ================= -->
+    <div id="page-admin" class="page">
+        <div class="dashboard-layout">
+            <aside class="sidebar">
+                <div>
+                    <div class="sidebar-brand">
+                        <div style="width:36px; height:36px; background:var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700;">A</div>
+                        <div>
+                            <div style="font-size:14px; font-weight:600;">Administrateur</div>
+                            <div style="font-size:11px; color:#9CA3AF;">admin@cjcb.com</div>
+                        </div>
+                    </div>
+                    <div class="sidebar-menu">
+                        <div class="sidebar-item active" onclick="switchAdminTab('overview', this)">📊 Vue d'ensemble</div>
+                        <div class="sidebar-item" onclick="switchAdminTab('posts', this)">📝 Articles du Blog</div>
+                        <div class="sidebar-item" onclick="switchAdminTab('members', this)">👥 Membres & Demandes</div>
+                        <div class="sidebar-item" onclick="switchAdminTab('questions', this)">💬 Questions Visiteurs</div>
+                    </div>
+                </div>
+                <div>
+                    <div class="sidebar-item" onclick="logout()" style="color:var(--error);">🚪 Déconnexion</div>
+                </div>
+            </aside>
+            <main class="main-content" id="admin-content-area">
+                <!-- Dynamically loaded admin section -->
+            </main>
+        </div>
+    </div>
+
+    <!-- ================= ESPACE MEMBRE ================= -->
+    <div id="page-member" class="page">
+        <div class="dashboard-layout">
+            <aside class="sidebar">
+                <div>
+                    <div class="sidebar-brand">
+                        <div id="member-sidebar-avatar" style="width:36px; height:36px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700;">M</div>
+                        <div>
+                            <div id="member-sidebar-name" style="font-size:14px; font-weight:600;">Membre</div>
+                            <div id="member-sidebar-domain" style="font-size:11px; color:#9CA3AF;">Domaine</div>
+                        </div>
+                    </div>
+                    <div class="sidebar-menu">
+                        <div class="sidebar-item active" onclick="switchMemberTab('profile', this)">👤 Mon Profil</div>
+                        <div class="sidebar-item" onclick="switchMemberTab('path', this)">🚀 Mon Parcours</div>
+                        <div class="sidebar-item" onclick="switchMemberTab('resources', this)">📚 Ressources Exclusives</div>
+                        <div class="sidebar-item" onclick="switchMemberTab('questions', this)">💬 Mes Questions</div>
+                    </div>
+                </div>
+                <div>
+                    <div class="sidebar-item" onclick="logout()" style="color:var(--error);">🚪 Déconnexion</div>
+                </div>
+            </aside>
+            <main class="main-content" id="member-content-area">
+                <!-- Dynamically loaded member section -->
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal for Blog Create/Edit or Question Reply -->
+    <div class="modal-overlay" id="globalModal">
+        <div class="modal-card" id="modalContentContainer">
+            <!-- Dynamic modal content -->
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-col">
+                <h4 style="color:white; font-size:18px;">CJCB</h4>
+                <p>Collectif des Jeunes Communicants du Burkina.<br>« Ensemble, faisons de la Com, notre engagement ! »</p>
+                <div class="social-icons">
+                    <a href="https://www.facebook.com/share/1BisEU37wU/" target="_blank" class="social-btn">FB</a>
+                    <a href="https://www.tiktok.com/@cjcb226" target="_blank" class="social-btn">TK</a>
+                    <a href="https://bf.linkedin.com/company/collectif-des-jeunes-communicants-du-burkina" target="_blank" class="social-btn">IN</a>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h4>Navigation</h4>
+                <ul>
+                    <li><a href="javascript:void(0)" onclick="navigate('home')">Accueil</a></li>
+                    <li><a href="javascript:void(0)" onclick="navigate('about')">À propos</a></li>
+                    <li><a href="javascript:void(0)" onclick="navigate('cells')">Cellules</a></li>
+                    <li><a href="javascript:void(0)" onclick="navigate('projects')">Projets</a></li>
+                    <li><a href="javascript:void(0)" onclick="navigate('blog')">Blog</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Communauté</h4>
+                <ul>
+                    <li><a href="javascript:void(0)" onclick="navigate('join')">Rejoindre</a></li>
+                    <li><a href="javascript:void(0)" onclick="navigate('login')">Espace Membre</a></li>
+                    <li><a href="javascript:void(0)" onclick="navigate('contact')">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Contact</h4>
+                <p>Ouagadougou, Burkina Faso</p>
+                <p>Email : cjcb226@gmail.com</p>
+                <p>Tél : +226 70 11 64 34</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 CJCB. Fondé en juin 2024 à Ouagadougou. Tous droits réservés.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Seed Posts if empty
+        const defaultPosts = [
+            {
+                id: 1,
+                title: "Comment optimiser votre présence LinkedIn en 2026",
+                category: "Formations",
+                author: "Cellule Formation",
+                date: "10 Juin 2026",
+                summary: "Découvrez les secrets pour propulser votre profil professionnel et attirer les recruteurs de premier plan.",
+                content: "LinkedIn est devenu l'outil incontournable pour tout communicant. En 2026, l'algorithme valorise l'authenticité, les carrousels interactifs et les prises de position sectorielles. Voici les 5 règles d'or pour bâtir une marque personnelle percutante..."
+            },
+            {
+                id: 2,
+                title: "5 tendances IA qui transforment la communication en Afrique",
+                category: "Actualités de la Com",
+                author: "Cellule Veille & Innovation",
+                date: "04 Juin 2026",
+                summary: "De la génération visuelle aux chatbots conversationnels adaptés aux langues locales, l'IA révolutionne le secteur.",
+                content: "L'intelligence artificielle n'est plus une option. Au Burkina Faso et en Afrique de l'Ouest, les agences intègrent l'IA pour automatiser la veille, personnaliser les campagnes publicitaires et optimiser les budgets de communication..."
+            },
+            {
+                id: 3,
+                title: "Offre : Stage en Community Management — Ouagadougou",
+                category: "Offres et Opportunités",
+                author: "Cellule Insertion",
+                date: "01 Juin 2026",
+                summary: "Une agence leader à Ouaga recherche un(e) jeune communicant(e) passionné(e) pour un stage de 6 mois.",
+                content: "Dans le cadre de la Stratégie d'Insertion Professionnelle du CJCB, une agence partenaire recrute un stagiaire en community management. Profil recherché : maîtrise de Canva, esprit créatif, rigueur et excellente expression écrite..."
+            }
+        ];
+
+        // Initialize localStorage
+        if (!localStorage.getItem('cjcb_posts')) {
+            localStorage.setItem('cjcb_posts', JSON.stringify(defaultPosts));
+        }
+        if (!localStorage.getItem('cjcb_users')) {
+            localStorage.setItem('cjcb_users', JSON.stringify([]));
+        }
+        if (!localStorage.getItem('cjcb_questions')) {
+            localStorage.setItem('cjcb_questions', JSON.stringify([
+                { id: 1, name: "Marc Kaboré", email: "marc@test.com", message: "Quels sont les critères exacts pour intégrer le bureau exécutif ?", status: "En attente", reply: "" }
+            ]));
+        }
+        if (!localStorage.getItem('cjcb_members')) {
+            localStorage.setItem('cjcb_members', JSON.stringify([
+                { id: 1, name: "Fatou Diallo", email: "fatou@test.com", phone: "+226 70 00 00 01", domain: "Community Management", level: "Cotisant", path: "Parcours Emploi", date: "08 Juin 2026" }
+            ]));
+        }
+
+        // Toast Notification System
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerText = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
+        }
+
+        // Navigation Controller
+        function navigate(pageId) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+
+            const targetPage = document.getElementById(`page-${pageId}`);
+            if (targetPage) targetPage.classList.add('active');
+
+            const activeLink = document.getElementById(`link-${pageId}`);
+            if (activeLink) activeLink.classList.add('active');
+
+            // Render specific page data
+            if (pageId === 'blog') renderBlogList('Tous');
+            if (pageId === 'admin') renderAdminOverview();
+            if (pageId === 'member') renderMemberProfile();
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobileMenu').classList.toggle('active');
+        }
+
+        // Header scroll effect
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('header');
+            if (window.scrollY > 30) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // ================= BLOG SYSTEM =================
+        function renderBlogList(category) {
+            const container = document.getElementById('blog-container');
+            const singleView = document.getElementById('blog-single-view');
+            container.style.display = 'grid';
+            singleView.style.display = 'none';
+
+            const posts = JSON.parse(localStorage.getItem('cjcb_posts')) || [];
+            const filtered = category === 'Tous' ? posts : posts.filter(p => p.category === category);
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<p style="grid-column: 1/-1; text-align:center; color:var(--gray);">Aucun article dans cette catégorie pour le moment.</p>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(post => `
+                <div class="card" style="cursor:pointer;" onclick="openBlogPost(${post.id})">
+                    <span class="badge badge-primary" style="margin-bottom:12px;">${post.category}</span>
+                    <h3 style="font-size:18px; color:var(--dark); margin-bottom:8px;">${post.title}</h3>
+                    <p style="color:var(--gray); font-size:14px; margin-bottom:16px;">${post.summary}</p>
+                    <div style="font-size:12px; color:var(--gray); display:flex; justify-content:between;">
+                        <span>Par ${post.author}</span> • <span>${post.date}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterBlog(category, btn) {
+            document.querySelectorAll('#blog-filters button').forEach(b => {
+                b.className = 'btn btn-outline';
+            });
+            btn.className = 'btn btn-primary';
+            renderBlogList(category);
+        }
+
+        function openBlogPost(postId) {
+            const posts = JSON.parse(localStorage.getItem('cjcb_posts')) || [];
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+
+            document.getElementById('blog-container').style.display = 'none';
+            document.getElementById('blog-single-view').style.display = 'block';
+
+            document.getElementById('single-post-cat').innerText = post.category;
+            document.getElementById('single-post-title').innerText = post.title;
+            document.getElementById('single-post-meta').innerText = `Par ${post.author} • Publié le ${post.date}`;
+            document.getElementById('single-post-content').innerHTML = post.content.replace(/\n/g, '<br>');
+        }
+
+        function closeBlogPost() {
+            document.getElementById('blog-container').style.display = 'grid';
+            document.getElementById('blog-single-view').style.display = 'none';
+        }
+
+        // ================= AUTHENTIFICATION =================
+        function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            if (email === 'admin@cjcb.com' && password === 'CJCB@2026!') {
+                sessionStorage.setItem('cjcb_sess', JSON.stringify({ email, name: 'Administrateur', role: 'admin' }));
+                showToast("Connexion administrateur réussie !", "success");
+                navigate('admin');
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('cjcb_users')) || [];
+            const user = users.find(u => u.email === email && u.password === password);
+            if (user) {
+                sessionStorage.setItem('cjcb_sess', JSON.stringify(user));
+                showToast(`Bienvenue, ${user.name} !`, "success");
+                navigate('member');
+                return;
+            }
+
+            showToast("Identifiants incorrects. Vérifiez votre email et mot de passe.", "error");
+        }
+
+        function handleRegister(event) {
+            event.preventDefault();
+            const name = document.getElementById('regName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const password = document.getElementById('regPassword').value.trim();
+            const domain = document.getElementById('regDomain').value;
+
+            const users = JSON.parse(localStorage.getItem('cjcb_users')) || [];
+            if (users.some(u => u.email === email)) {
+                showToast("Cet email est déjà utilisé.", "error");
+                return;
+            }
+
+            const newUser = { id: Date.now(), name, email, password, domain, role: 'member', date: 'Juin 2026' };
+            users.push(newUser);
+            localStorage.setItem('cjcb_users', JSON.stringify(users));
+
+            sessionStorage.setItem('cjcb_sess', JSON.stringify(newUser));
+            showToast("Compte créé avec succès !", "success");
+            navigate('member');
+        }
+
+        function logout() {
+            sessionStorage.removeItem('cjcb_sess');
+            showToast("Déconnexion réussie.", "info");
+            navigate('home');
+        }
+
+        // ================= FORMS SUBMISSION =================
+        function handleJoinSubmit(event) {
+            event.preventDefault();
+            const newMember = {
+                id: Date.now(),
+                name: document.getElementById('joinName').value,
+                email: document.getElementById('joinEmail').value,
+                phone: document.getElementById('joinPhone').value,
+                domain: document.getElementById('joinDomain').value,
+                level: document.getElementById('joinLevel').value,
+                path: document.getElementById('joinPath').value,
+                date: new Date().toLocaleDateString()
+            };
+
+            const members = JSON.parse(localStorage.getItem('cjcb_members')) || [];
+            members.push(newMember);
+            localStorage.setItem('cjcb_members', JSON.stringify(members));
+
+            showToast("Demande d'adhésion envoyée avec succès !", "success");
+            document.getElementById('joinForm').reset();
+            navigate('home');
+        }
+
+        function handleContactSubmit(event) {
+            event.preventDefault();
+            const newQ = {
+                id: Date.now(),
+                name: document.getElementById('contactName').value,
+                email: document.getElementById('contactEmail').value,
+                message: document.getElementById('contactMessage').value,
+                status: "En attente",
+                reply: ""
+            };
+
+            const questions = JSON.parse(localStorage.getItem('cjcb_questions')) || [];
+            questions.push(newQ);
+            localStorage.setItem('cjcb_questions', JSON.stringify(questions));
+
+            showToast("Question envoyée avec succès ! L'équipe vous répondra.", "success");
+            document.getElementById('contactEmail').value = '';
+            document.getElementById('contactName').value = '';
+            document.getElementById('contactMessage').value = '';
+        }
+
+        // ================= ADMIN DASHBOARD =================
+        function switchAdminTab(tab, el) {
+            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+
+            if (tab === 'overview') renderAdminOverview();
+            else if (tab === 'posts') renderAdminPosts();
+            else if (tab === 'members') renderAdminMembers();
+            else if (tab === 'questions') renderAdminQuestions();
+        }
+
+        function renderAdminOverview() {
+            const posts = JSON.parse(localStorage.getItem('cjcb_posts')) || [];
+            const users = JSON.parse(localStorage.getItem('cjcb_users')) || [];
+            const members = JSON.parse(localStorage.getItem('cjcb_members')) || [];
+            const questions = JSON.parse(localStorage.getItem('cjcb_questions')) || [];
+
+            const area = document.getElementById('admin-content-area');
+            area.innerHTML = `
+                <h2 style="margin-bottom:24px; color:var(--dark);">Tableau de bord administrateur</h2>
+                <div class="grid-4" style="margin-bottom:30px;">
+                    <div class="card"><h3 style="color:var(--primary);">${posts.length}</h3><p style="color:var(--gray); font-size:13px;">Articles publiés</p></div>
+                    <div class="card"><h3 style="color:var(--accent);">${users.length + 40}</h3><p style="color:var(--gray); font-size:13px;">Membres inscrits</p></div>
+                    <div class="card"><h3 style="color:#10B981;">${members.length}</h3><p style="color:var(--gray); font-size:13px;">Demandes d'adhésion</p></div>
+                    <div class="card"><h3 style="color:#8B5CF6;">${questions.filter(q=>q.status==="En attente").length}</h3><p style="color:var(--gray); font-size:13px;">Questions en attente</p></div>
+                </div>
+                <h3 style="margin-bottom:16px; color:var(--dark);">Derniers articles</h3>
+                <div class="table-container">
+                    <table>
+                        <tr><th>Titre</th><th>Catégorie</th><th>Auteur</th></tr>
+                        ${posts.slice(0,3).map(p => `<tr><td>${p.title}</td><td>${p.category}</td><td>${p.author}</td></tr>`).join('')}
+                    </table>
+                </div>
+            `;
+        }
+
+        function renderAdminPosts() {
+            const posts = JSON.parse(localStorage.getItem('cjcb_posts')) || [];
+            const area = document.getElementById('admin-content-area');
+            area.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                    <h2 style="color:var(--dark);">Gestion des Articles</h2>
+                    <button class="btn btn-primary" onclick="openPostModal()">+ Nouvel article</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <tr><th>Titre</th><th>Catégorie</th><th>Auteur</th><th>Date</th><th>Actions</th></tr>
+                        ${posts.map(p => `
+                            <tr>
+                                <td>${p.title}</td>
+                                <td><span class="badge badge-primary">${p.category}</span></td>
+                                <td>${p.author}</td>
+                                <td>${p.date}</td>
+                                <td>
+                                    <button class="btn btn-outline" style="padding:4px 10px; font-size:12px;" onclick="deletePost(${p.id})">Supprimer</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </table>
+                </div>
+            `;
+        }
+
+        function openPostModal() {
+            document.getElementById('globalModal').classList.add('active');
+            document.getElementById('modalContentContainer').innerHTML = `
+                <h3 style="margin-bottom:20px;">Créer un nouvel article</h3>
+                <form onsubmit="handleCreatePost(event)">
+                    <div class="form-group"><label>Titre</label><input type="text" class="form-control" id="newPostTitle" required></div>
+                    <div class="form-group"><label>Catégorie</label>
+                        <select class="form-control" id="newPostCat">
+                            <option>Formations</option>
+                            <option>Actualités de la Com</option>
+                            <option>Offres et Opportunités</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Auteur</label><input type="text" class="form-control" id="newPostAuthor" required value="Cellule Communication"></div>
+                    <div class="form-group"><label>Résumé</label><textarea class="form-control" id="newPostSummary" rows="2" required></textarea></div>
+                    <div class="form-group"><label>Contenu complet</label><textarea class="form-control" id="newPostContent" rows="4" required></textarea></div>
+                    <div style="display:flex; gap:12px;">
+                        <button type="submit" class="btn btn-primary" style="flex:1;">Publier</button>
+                        <button type="button" class="btn btn-outline" onclick="closeModal()" style="flex:1;">Annuler</button>
+                    </div>
+                </form>
+            `;
+        }
+
+        function handleCreatePost(event) {
+            event.preventDefault();
+            const posts = JSON.parse(localStorage.getItem('cjcb_posts')) || [];
+            const newPost = {
+                id: Date.now(),
+                title: document.getElementById('newPostTitle').value,
+                category: document.getElementById('newPostCat').value,
+                author: document.getElementById('newPostAuthor').value,
+                date: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }),
+                summary: document.getElementById('newPostSummary').value,
+                content: document.getElementById('newPostContent').value
+            };
+            posts.unshift(newPost);
+            localStorage.setItem('cjcb_posts', JSON.stringify(posts));
+            closeModal();
+            showToast("Article publié avec succès !", "success");
+            renderAdminPosts();
+        }
+
+        function deletePost(id) {
+            let posts = JSON.parse(localStorage.getItem('cjcb_posts')) || [];
+            posts = posts.filter(p => p.id !== id);
+            localStorage.setItem('cjcb_posts', JSON.stringify(posts));
+            showToast("Article supprimé.", "info");
+            renderAdminPosts();
+        }
+
+        function renderAdminMembers() {
+            const members = JSON.parse(localStorage.getItem('cjcb_members')) || [];
+            const area = document.getElementById('admin-content-area');
+            area.innerHTML = `
+                <h2 style="margin-bottom:24px; color:var(--dark);">Demandes d'adhésion (${members.length})</h2>
+                <div class="table-container">
+                    <table>
+                        <tr><th>Nom</th><th>Email</th><th>Téléphone</th><th>Domaine</th><th>Niveau</th><th>Action</th></tr>
+                        ${members.map(m => `
+                            <tr>
+                                <td>${m.name}</td>
+                                <td>${m.email}</td>
+                                <td>${m.phone}</td>
+                                <td>${m.domain}</td>
+                                <td><span class="badge badge-warning">${m.level}</span></td>
+                                <td><button class="btn btn-outline" style="padding:4px 10px; font-size:12px;" onclick="deleteMember(${m.id})">Supprimer</button></td>
+                            </tr>
+                        `).join('')}
+                    </table>
+                </div>
+            `;
+        }
+
+        function deleteMember(id) {
+            let members = JSON.parse(localStorage.getItem('cjcb_members')) || [];
+            members = members.filter(m => m.id !== id);
+            localStorage.setItem('cjcb_members', JSON.stringify(members));
+            showToast("Demande supprimée.", "info");
+            renderAdminMembers();
+        }
+
+        function renderAdminQuestions() {
+            const questions = JSON.parse(localStorage.getItem('cjcb_questions')) || [];
+            const area = document.getElementById('admin-content-area');
+            area.innerHTML = `
+                <h2 style="margin-bottom:24px; color:var(--dark);">Questions des visiteurs</h2>
+                <div class="table-container">
+                    <table>
+                        <tr><th>Nom</th><th>Email</th><th>Message</th><th>Statut</th><th>Actions</th></tr>
+                        ${questions.map(q => `
+                            <tr>
+                                <td>${q.name}</td>
+                                <td>${q.email}</td>
+                                <td>${q.message}</td>
+                                <td><span class="badge ${q.status==='Répondu'?'badge-success':'badge-warning'}">${q.status}</span></td>
+                                <td>
+                                    <button class="btn btn-primary" style="padding:4px 10px; font-size:12px;" onclick="openReplyModal(${q.id})">Répondre</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </table>
+                </div>
+            `;
+        }
+
+        function openReplyModal(qId) {
+            const questions = JSON.parse(localStorage.getItem('cjcb_questions')) || [];
+            const q = questions.find(item => item.id === qId);
+            if (!q) return;
+
+            document.getElementById('globalModal').classList.add('active');
+            document.getElementById('modalContentContainer').innerHTML = `
+                <h3>Répondre à ${q.name}</h3>
+                <p style="color:var(--gray); font-size:13px; margin:10px 0;">"${q.message}"</p>
+                <div class="form-group"><textarea class="form-control" id="adminReplyText" rows="4" placeholder="Votre réponse..." required></textarea></div>
+                <div style="display:flex; gap:12px;">
+                    <button class="btn btn-primary" onclick="submitReply(${q.id})" style="flex:1;">Envoyer la réponse</button>
+                    <button class="btn btn-outline" onclick="closeModal()" style="flex:1;">Annuler</button>
+                </div>
+            `;
+        }
+
+        function submitReply(qId) {
+            const replyText = document.getElementById('adminReplyText').value;
+            let questions = JSON.parse(localStorage.getItem('cjcb_questions')) || [];
+            questions = questions.map(q => {
+                if (q.id === qId) {
+                    q.status = "Répondu";
+                    q.reply = replyText;
+                }
+                return q;
+            });
+            localStorage.setItem('cjcb_questions', JSON.stringify(questions));
+            closeModal();
+            showToast("Réponse envoyée avec succès !", "success");
+            renderAdminQuestions();
+        }
+
+        // ================= MEMBER DASHBOARD =================
+        function switchMemberTab(tab, el) {
+            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+
+            if (tab === 'profile') renderMemberProfile();
+            else if (tab === 'path') renderMemberPath();
+            else if (tab === 'resources') renderMemberResources();
+            else if (tab === 'questions') renderMemberQuestions();
+        }
+
+        function renderMemberProfile() {
+            const sess = JSON.parse(sessionStorage.getItem('cjcb_sess'));
+            if (!sess) return navigate('login');
+
+            document.getElementById('member-sidebar-name').innerText = sess.name;
+            document.getElementById('member-sidebar-domain').innerText = sess.domain || 'Membre';
+            document.getElementById('member-sidebar-avatar').innerText = sess.name.charAt(0).toUpperCase();
+
+            const area = document.getElementById('member-content-area');
+            area.innerHTML = `
+                <h2 style="margin-bottom:24px; color:var(--dark);">Mon Profil Membre</h2>
+                <div class="card" style="max-width:600px;">
+                    <div style="display:flex; align-items:center; gap:20px; margin-bottom:24px; border-bottom:1px solid var(--border); padding-bottom:20px;">
+                        <div style="width:64px; height:64px; background:var(--primary); color:white; font-size:24px; font-weight:700; border-radius:50%; display:flex; align-items:center; justify-content:center;">${sess.name.charAt(0)}</div>
+                        <div>
+                            <h3>${sess.name}</h3>
+                            <p style="color:var(--gray); font-size:14px;">${sess.domain || 'Communicant'}</p>
+                            <span class="badge badge-success" style="margin-top:6px;">Membre Actif CJCB</span>
+                        </div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:12px; font-size:14px;">
+                        <p><strong>Email :</strong> ${sess.email}</p>
+                        <p><strong>Rôle :</strong> Membre de la communauté</p>
+                        <p><strong>Date d'adhésion :</strong> Juin 2026</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderMemberPath() {
+            const area = document.getElementById('member-content-area');
+            area.innerHTML = `
+                <h2 style="margin-bottom:24px; color:var(--dark);">Mon Parcours d'Insertion Professionnelle</h2>
+                <p style="color:var(--gray); margin-bottom:20px; font-size:14px;">Suivez vos étapes de progression (cliquez pour cocher) :</p>
+                <div class="card" style="max-width:600px;">
+                    <div style="display:flex; flex-direction:column; gap:16px;">
+                        <label style="display:flex; align-items:center; gap:12px; cursor:pointer;"><input type="checkbox" checked style="width:18px; height:18px;"> Audit de votre CV et profil LinkedIn</label>
+                        <label style="display:flex; align-items:center; gap:12px; cursor:pointer;"><input type="checkbox" checked style="width:18px; height:18px;"> Participation à l'atelier Masterclass Communication</label>
+                        <label style="display:flex; align-items:center; gap:12px; cursor:pointer;"><input type="checkbox" style="width:18px; height:18px;"> Session de mentorat junior/senior</label>
+                        <label style="display:flex; align-items:center; gap:12px; cursor:pointer;"><input type="checkbox" style="width:18px; height:18px;"> Inscription sur la Marketplace CJCB</label>
+                        <label style="display:flex; align-items:center; gap:12px; cursor:pointer;"><input type="checkbox" style="width:18px; height:18px;"> Simulation d'entretien professionnel</label>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderMemberResources() {
+            const area = document.getElementById('member-content-area');
+            area.innerHTML = `
+                <h2 style="margin-bottom:24px; color:var(--dark);">Ressources Exclusives</h2>
+                <div class="grid-2">
+                    <div class="card">
+                        <h4>📘 Guide d'insertion 2026</h4>
+                        <p style="color:var(--gray); font-size:13px; margin:8px 0 16px;">Le manuel complet pour décrocher un poste en agence.</p>
+                        <button class="btn btn-outline" style="padding:6px 14px; font-size:13px;">Télécharger →</button>
+                    </div>
+                    <div class="card">
+                        <h4>🎨 Templates Canva CJCB</h4>
+                        <p style="color:var(--gray); font-size:13px; margin:8px 0 16px;">Modèles graphiques aux couleurs officielles.</p>
+                        <button class="btn btn-outline" style="padding:6px 14px; font-size:13px;">Accéder →</button>
+                    </div>
+                    <div class="card">
+                        <h4>💼 Modèles de CV & Lettres</h4>
+                        <p style="color:var(--gray); font-size:13px; margin:8px 0 16px;">Formats testés et approuvés par les recruteurs.</p>
+                        <button class="btn btn-outline" style="padding:6px 14px; font-size:13px;">Télécharger →</button>
+                    </div>
+                    <div class="card">
+                        <h4>🤖 Guide IA pour Communicants</h4>
+                        <p style="color:var(--gray); font-size:13px; margin:8px 0 16px;">Maîtrisez les prompts et outils génératifs.</p>
+                        <button class="btn btn-outline" style="padding:6px 14px; font-size:13px;">Consulter →</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderMemberQuestions() {
+            const sess = JSON.parse(sessionStorage.getItem('cjcb_sess'));
+            const questions = JSON.parse(localStorage.getItem('cjcb_questions')) || [];
+            const myQuestions = questions.filter(q => q.email === sess.email);
+
+            const area = document.getElementById('member-content-area');
+            area.innerHTML = `
+                <h2 style="margin-bottom:24px; color:var(--dark);">Mes Questions à l'Admin</h2>
+                <div class="card" style="max-width:700px; margin-bottom:30px;">
+                    <form onsubmit="handleMemberQuestion(event)">
+                        <div class="form-group"><label>Poser une nouvelle question</label><textarea class="form-control" id="memberQText" rows="3" required placeholder="Votre message..."></textarea></div>
+                        <button type="submit" class="btn btn-primary">Envoyer</button>
+                    </form>
+                </div>
+                <h3 style="margin-bottom:16px;">Historique des échanges</h3>
+                <div style="display:flex; flex-direction:column; gap:16px; max-width:700px;">
+                    ${myQuestions.length === 0 ? '<p style="color:var(--gray);">Aucune question posée pour l\'instant.</p>' : myQuestions.map(q => `
+                        <div class="card">
+                            <p><strong>Votre question :</strong> ${q.message}</p>
+                            <p style="margin-top:8px;"><span class="badge ${q.status==='Répondu'?'badge-success':'badge-warning'}">${q.status}</span></p>${q.reply ? `<div style="background:#F8F9FA; padding:12px; border-radius:8px; margin-top:12px; font-size:13px;"><strong>Réponse de l'Admin :</strong> ${q.reply}</div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function handleMemberQuestion(event) {
+            event.preventDefault();
+            const sess = JSON.parse(sessionStorage.getItem('cjcb_sess'));
+            const text = document.getElementById('memberQText').value;
+
+            const questions = JSON.parse(localStorage.getItem('cjcb_questions')) || [];
+            questions.push({
+                id: Date.now(),
+                name: sess.name,
+                email: sess.email,
+                message: text,
+                status: "En attente",
+                reply: ""
+            });
+            localStorage.setItem('cjcb_questions', JSON.stringify(questions));
+            showToast("Question envoyée !", "success");
+            renderMemberQuestions();
+        }
+
+        function closeModal() {
+            document.getElementById('globalModal').classList.remove('active');
+        }
+    </script>
+</body>
+</html>
